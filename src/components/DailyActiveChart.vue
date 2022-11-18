@@ -28,5 +28,7 @@ onMounted(() => {
   width: 500px;
   height: 300px;
   border: 1px solid black;
+  border-radius: 30px;
+  margin: 5px;
 }
 </style>

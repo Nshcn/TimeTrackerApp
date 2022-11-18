@@ -106,13 +106,12 @@ function test(startDay: string, endDay: string) {
        class="chart"></div>
   <div id="line-chart"
        class="chart"></div>
-  <div id="line-chart1"
-       class="chart"></div>
   <div id="pie-chart"
        class="chart"></div>
-  <div v-for="data in state.activityDataArr"
-       :key="data.name">
-    <DailyActiveChartVue :data="data"></DailyActiveChartVue>
+  <div class="barChartContainer">
+    <DailyActiveChartVue v-for="data in state.activityDataArr"
+                         :key="data.name"
+                         :data="data"></DailyActiveChartVue>
   </div>
 </template>
 
@@ -121,5 +120,12 @@ function test(startDay: string, endDay: string) {
   width: 500px;
   height: 300px;
   border: 1px solid black;
+}
+.barChartContainer {
+  width: 100%;
+  height: 1000px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
 }
 </style>
