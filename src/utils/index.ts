@@ -1,6 +1,66 @@
 import moment from 'moment'
 import * as echarts from 'echarts'
 import { allActiveType, activeTimeMap } from './config.js'
+
+/**
+ * 将原始JSON数据传换成每日数据
+ * @param sourceData
+ * @param startDate
+ * @param endDate
+ * @returns
+ */
+export function transformToDailyData(
+  sourceData: any,
+  startDate: string,
+  endDate: string
+) {
+  let daysList = enumerateDaysBetweenDates(startDate, endDate)
+  let map: any = {}
+  for (let type of allActiveType) {
+    map[type] = Math.random() * 100
+  }
+  let filterDataRange = filterDataByDateRange(sourceData, startDate, endDate)
+  let dailyData = []
+  for (let day of daysList) {
+    let filterDataInOneDay = filterDataByDateRange(filterDataRange, day, day)
+    let mapData = transformDataToMap(filterDataInOneDay, { ...activeTimeMap })
+    let item = {
+      时间: day,
+      ...mapData,
+    }
+    dailyData.push(item)
+  }
+  return dailyData
+}
+
+/**
+ * 获取所有活动的特定时间的时长
+ */
+export function getActivityData(dailyData: any) {
+  let resObj: any = {}
+  let daysList: any = []
+  for (let dataInOneDay of dailyData) {
+    daysList.push(dataInOneDay['时间'])
+    for (let type of allActiveType) {
+      if (resObj[type] == undefined) {
+        resObj[type] = []
+      } else {
+        resObj[type].push(dataInOneDay[type])
+      }
+    }
+  }
+  let resArr = []
+  for (let [key, value] of Object.entries(resObj)) {
+    resArr.push({
+      name: key,
+      xAxisData: daysList,
+      value: value,
+    })
+  }
+
+  return resArr
+}
+
 /**
  * 分别汇总各类活动持续时间，返回一个包含各类时间的对象
  * @param sourceData 传入某时间段的数据
@@ -57,30 +117,56 @@ export function enumerateDaysBetweenDates(startDate: string, endDate: string) {
   return daysList
 }
 
-export function transformDataToLine(
-  sourceData: any,
-  startDate: string,
-  endDate: string
+/**
+ * 绘制单个活动的柱状图
+ * @param lineChartDom
+ * @param data
+ * @param chartType
+ */
+export function drawBarChartOfSingleActivity(
+  lineChartDom: HTMLElement,
+  data: {
+    name: string
+    xAxisData: number[]
+    value: number[]
+  }
 ) {
-  let daysList = enumerateDaysBetweenDates(startDate, endDate)
-  let map: any = {}
-  for (let type of allActiveType) {
-    map[type] = Math.random() * 100
+  var myChart = echarts.init(lineChartDom!)
+  var option = {
+    legend: {},
+    tooltip: {
+      valueFormatter: (value: number) => {
+        let time = moment.duration(value, 'seconds')
+        let hours = time.hours()
+        let minutes = time.minutes()
+        return `${hours}h${minutes}m`
+      },
+    },
+    color: 'skyblue',
+    yAxis: {
+      axisLabel: {
+        formatter: function (value: number) {
+          let time = moment.duration(value, 'seconds')
+          let hours = time.hours()
+          let minutes = time.minutes()
+          return `${hours}h${minutes}m`
+        },
+      },
+      type: 'value',
+    },
+    xAxis: {
+      type: 'category',
+      data: data.xAxisData,
+    },
+    series: [
+      {
+        name: data.name,
+        data: data.value,
+        type: 'bar',
+      },
+    ],
   }
-  let filterDataRange = filterDataByDateRange(sourceData, startDate, endDate)
-  let lineData = []
-  for (let day of daysList) {
-    let filterDataInOneDay = filterDataByDateRange(filterDataRange, day, day)
-    let mapData = transformDataToMap(filterDataInOneDay, { ...activeTimeMap })
-    let item = {
-      时间: day,
-      ...mapData,
-    }
-    lineData.push(item)
-  }
-  console.log('lineData', lineData)
-
-  return lineData
+  option && myChart.setOption(option)
 }
 
 /**
@@ -97,7 +183,7 @@ export function initBarChart(barChartDom: HTMLElement, barData: any) {
         let time = moment.duration(value, 'seconds')
         let hours = time.hours()
         let minutes = time.minutes()
-        return `${hours}小时${minutes}分钟`
+        return `${hours}h${minutes}m`
       },
     },
     dataset: [
@@ -119,7 +205,7 @@ export function initBarChart(barChartDom: HTMLElement, barData: any) {
           let time = moment.duration(value, 'seconds')
           let hours = time.hours()
           let minutes = time.minutes()
-          return `${hours}小时${minutes}分钟`
+          return `${hours}h${minutes}m`
         },
       },
     },
@@ -150,7 +236,7 @@ export function initLineChart(lineChartDom: HTMLElement, lineData: Array<{}>) {
         let time = moment.duration(value, 'seconds')
         let hours = time.hours()
         let minutes = time.minutes()
-        return `${hours}小时${minutes}分钟`
+        return `${hours}h${minutes}m`
       },
     },
     dataset: [
@@ -165,7 +251,7 @@ export function initLineChart(lineChartDom: HTMLElement, lineData: Array<{}>) {
           let time = moment.duration(value, 'seconds')
           let hours = time.hours()
           let minutes = time.minutes()
-          return `${hours}小时${minutes}分钟`
+          return `${hours}h${minutes}m`
         },
       },
     },
@@ -199,7 +285,7 @@ export function initPieChart(
         let time = moment.duration(value, 'seconds')
         let hours = time.hours()
         let minutes = time.minutes()
-        return `${hours}小时${minutes}分钟`
+        return `${hours}h${minutes}m`
       },
     },
     dataset: [
