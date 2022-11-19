@@ -15,6 +15,8 @@ import {
 } from './utils/index'
 import { activeTimeMap } from './utils/config.js'
 import DailyActiveChartVue from './components/DailyActiveChart.vue'
+import Papa from 'papaparse'
+import axios from 'axios'
 
 const dataRange = ref('')
 interface ChartItemData {
@@ -36,6 +38,23 @@ const state: any = reactive({
 let lineChartDom = null
 let barChartDom = null
 let pieChartDom = null
+
+function transformCsvToJson(e: any) {
+  const file = e.target.files[0]
+  Papa.parse(file, {
+    header: true,
+    complete: (res: { data: [] }) => {
+      const splitIdx = res.data.findIndex((item) => item['活动类型'] == 0)
+      const data = res.data.slice(0, splitIdx)
+      axios.post('http://127.0.0.1:4000', data).then((res) => {
+        console.log(res)
+      })
+    },
+  })
+}
+function test() {
+  axios.get('http://127.0.0.1:4000').then((res) => console.log(res.data))
+}
 
 onMounted(() => {
   lineChartDom = document.getElementById('line-chart')
@@ -82,7 +101,7 @@ onMounted(() => {
 //   initLineChart(lieChartDom!, lineData)
 // })
 
-function test(rangeType: number) {
+function changeRange(rangeType: number) {
   const curDate = moment(new Date()).format('YYYY-MM-DD')
   const prevDate = moment(curDate)
     .subtract(rangeType, 'days')
@@ -124,12 +143,17 @@ function test(rangeType: number) {
                     :default-value="[new Date(), new Date()]"
                     placeholder=""></el-date-picker>
   </div>
+  <input type="file"
+         @change="transformCsvToJson($event)"
+         accept=".csv">
   <el-button type="primary"
-             @click="test(365)">过去一年</el-button>
+             @click="test">测试</el-button>
   <el-button type="primary"
-             @click="test(30)">过去一个月</el-button>
+             @click="changeRange(365)">过去一年</el-button>
   <el-button type="primary"
-             @click="test(7)">过去一周</el-button>
+             @click="changeRange(30)">过去一个月</el-button>
+  <el-button type="primary"
+             @click="changeRange(7)">过去一周</el-button>
   <div id="bar-chart"
        class="chart"></div>
   <div id="line-chart"
