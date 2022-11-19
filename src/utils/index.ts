@@ -14,17 +14,17 @@ export function transformToDailyData(
   startDate: string,
   endDate: string
 ) {
-  let daysList = enumerateDaysBetweenDates(startDate, endDate)
-  let map: any = {}
-  for (let type of allActiveType) {
+  const daysList = enumerateDaysBetweenDates(startDate, endDate)
+  const map: any = {}
+  for (const type of allActiveType) {
     map[type] = Math.random() * 100
   }
-  let filterDataRange = filterDataByDateRange(sourceData, startDate, endDate)
-  let dailyData = []
-  for (let day of daysList) {
-    let filterDataInOneDay = filterDataByDateRange(filterDataRange, day, day)
-    let mapData = transformDataToMap(filterDataInOneDay, { ...activeTimeMap })
-    let item = {
+  const filterDataRange = filterDataByDateRange(sourceData, startDate, endDate)
+  const dailyData = []
+  for (const day of daysList) {
+    const filterDataInOneDay = filterDataByDateRange(filterDataRange, day, day)
+    const mapData = transformDataToMap(filterDataInOneDay, { ...activeTimeMap })
+    const item = {
       时间: day,
       ...mapData,
     }
@@ -37,11 +37,11 @@ export function transformToDailyData(
  * 获取所有活动的特定时间的时长
  */
 export function getActivityData(dailyData: any) {
-  let resObj: any = {}
-  let daysList: any = []
-  for (let dataInOneDay of dailyData) {
+  const resObj: any = {}
+  const daysList: any = []
+  for (const dataInOneDay of dailyData) {
     daysList.push(dataInOneDay['时间'])
-    for (let type of allActiveType) {
+    for (const type of allActiveType) {
       if (resObj[type] == undefined) {
         resObj[type] = []
       } else {
@@ -49,8 +49,8 @@ export function getActivityData(dailyData: any) {
       }
     }
   }
-  let resArr = []
-  for (let [key, value] of Object.entries(resObj)) {
+  const resArr = []
+  for (const [key, value] of Object.entries(resObj)) {
     resArr.push({
       name: key,
       xAxisData: daysList,
@@ -66,10 +66,12 @@ export function getActivityData(dailyData: any) {
  * @param sourceData 传入某时间段的数据
  */
 export function transformDataToMap(sourceData: [], activeTimeMap: any) {
-  for (let item of sourceData) {
-    let timeType = item['活动类型']
-    let timeDurationInHMS = item['持续时间']
-    let timeDurationInSeconds = moment.duration(timeDurationInHMS).as('seconds') // 将时分秒格式转换为数值型的秒值
+  for (const item of sourceData) {
+    const timeType = item['活动类型']
+    const timeDurationInHMS = item['持续时间']
+    const timeDurationInSeconds = moment
+      .duration(timeDurationInHMS)
+      .as('seconds') // 将时分秒格式转换为数值型的秒值
     if (activeTimeMap[timeType] === undefined) {
       activeTimeMap[timeType] = timeDurationInSeconds
     } else {
@@ -90,10 +92,10 @@ export function filterDataByDateRange(
   startDate: string,
   endDate: string
 ) {
-  let startIndex = sourceData.findIndex((item: any) =>
+  const startIndex = sourceData.findIndex((item: any) =>
     moment(item['开始时间'].slice(0, 10)).isSameOrBefore(endDate)
   )
-  let endIndex = sourceData.findIndex((item: any) =>
+  const endIndex = sourceData.findIndex((item: any) =>
     moment(item['开始时间'].slice(0, 10)).isBefore(startDate)
   )
   return sourceData.slice(startIndex, endIndex)
@@ -106,9 +108,9 @@ export function filterDataByDateRange(
  */
 export function enumerateDaysBetweenDates(startDate: string, endDate: string) {
   // 假定你已经保证了startDate 小于endDate，且二者不相等
-  let daysList = []
-  let start = moment(startDate)
-  let end = moment(endDate)
+  const daysList = []
+  const start = moment(startDate)
+  const end = moment(endDate)
   daysList.push(start.format('YYYY-MM-DD'))
   while (start.add(1, 'days').isBefore(end)) {
     daysList.push(start.format('YYYY-MM-DD')) // 注意这里add方法处理后start对象已经改变。
@@ -118,7 +120,7 @@ export function enumerateDaysBetweenDates(startDate: string, endDate: string) {
 }
 
 export function transformSecondsToHM(seconds: number) {
-  let hours = Math.floor(seconds / 3600)
+  const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds / 60) % 60)
   return hours == 0 ? `${minutes}m` : `${hours}h${minutes}m`
 }
@@ -231,9 +233,9 @@ export function initLineChart(lineChartDom: HTMLElement, lineData: Array<{}>) {
     yAxis: {
       axisLabel: {
         formatter: function (value: number) {
-          let time = moment.duration(value, 'seconds')
-          let hours = time.hours()
-          let minutes = time.minutes()
+          const time = moment.duration(value, 'seconds')
+          const hours = time.hours()
+          const minutes = time.minutes()
           return `${hours}h${minutes}m`
         },
       },

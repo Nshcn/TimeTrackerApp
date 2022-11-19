@@ -23,21 +23,32 @@ interface ChartItemData {
 }
 const chartItemData: ChartItemData = reactive({ chartType: 'bar', data: 323 })
 
-let state: any = reactive({ activityDataArr: [] })
+const state: any = reactive({
+  activityDataArr: [],
+  startDay: '',
+  endDay: '',
+})
+
+// watch([state.startDay, state.endDay], () => {
+//   let dailyData = transformToDailyData(timeData, state.startDay, state.endDay)
+//   state.activityDataArr = getActivityData(dailyData)
+// })
+let lineChartDom = null
+let barChartDom = null
+let pieChartDom = null
 
 onMounted(() => {
-  let startDay = '2022-04-24'
-  let endDay = '2022-05-18'
-  let dailyData = transformToDailyData(timeData, startDay, endDay)
-  let resArr = getActivityData(dailyData)
-  state.activityDataArr = resArr
-  console.log('activityDataArr', state.activityDataArr)
-  var barChartDom = document.getElementById('bar-chart')
-  initBarChart(barChartDom!, timeSource)
-  var pieChartDom = document.getElementById('pie-chart')
-  initPieChart(pieChartDom!, timeSource)
-  var lineChartDom = document.getElementById('line-chart')
-  initLineChart(lineChartDom!, dailyData)
+  lineChartDom = document.getElementById('line-chart')
+  barChartDom = document.getElementById('bar-chart')
+  pieChartDom = document.getElementById('pie-chart')
+  state.startDay = '2022-11-01'
+  state.endDay = '2022-11-12'
+  const dailyData = transformToDailyData(timeData, state.startDay, state.endDay)
+  state.activityDataArr = getActivityData(dailyData)
+  // initLineChart(lineChartDom!, dailyData)
+  // initBarChart(barChartDom!, timeSource)
+  // initPieChart(pieChartDom!, timeSource)
+
   // var lineChartDom1 = document.getElementById('line-chart1')
   // drawBarChartOfSingleActivity(
   //   lineChartDom1!,
@@ -47,8 +58,15 @@ onMounted(() => {
   // )
   // chartItemData.chartType = 'bar'
   // chartItemData.data = [daysList, activityData['睡觉']]
+  watch([() => state.startDay, () => state.endDay], () => {
+    const dailyData = transformToDailyData(
+      timeData,
+      state.startDay,
+      state.endDay
+    )
+    state.activityDataArr = getActivityData(dailyData)
+  })
 })
-let timeSource: any = []
 // watch(dataRange, () => {
 //   timeSource = refreshData()
 //   let startDay = moment(dataRange.value[0]).format('YYYY-MM-DD')
@@ -64,9 +82,15 @@ let timeSource: any = []
 //   initLineChart(lieChartDom!, lineData)
 // })
 
-function test(startDay: string, endDay: string) {
+function test(rangeType: number) {
+  const curDate = moment(new Date()).format('YYYY-MM-DD')
+  const prevDate = moment(curDate)
+    .subtract(rangeType, 'days')
+    .format('YYYY-MM-DD')
+  state.startDay = prevDate
+  state.endDay = curDate
   // console.log(moment(dataRange.value[0]).format('YYYY-MM-DD'))
-  chartItemData.chartType = chartItemData.chartType == 'line' ? 'bar' : 'line'
+  // chartItemData.chartType = chartItemData.chartType == 'line' ? 'bar' : 'line'
 }
 
 // function refreshData() {
@@ -101,7 +125,11 @@ function test(startDay: string, endDay: string) {
                     placeholder=""></el-date-picker>
   </div>
   <el-button type="primary"
-             @click="test">test</el-button>
+             @click="test(365)">过去一年</el-button>
+  <el-button type="primary"
+             @click="test(30)">过去一个月</el-button>
+  <el-button type="primary"
+             @click="test(7)">过去一周</el-button>
   <div id="bar-chart"
        class="chart"></div>
   <div id="line-chart"
@@ -116,11 +144,6 @@ function test(startDay: string, endDay: string) {
 </template>
 
 <style>
-.chart {
-  width: 500px;
-  height: 300px;
-  border: 1px solid black;
-}
 .barChartContainer {
   width: 100%;
   height: 1000px;
