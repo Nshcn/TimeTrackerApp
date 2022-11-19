@@ -117,6 +117,12 @@ export function enumerateDaysBetweenDates(startDate: string, endDate: string) {
   return daysList
 }
 
+export function transformSecondsToHM(seconds: number) {
+  let hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds / 60) % 60)
+  return hours == 0 ? `${minutes}m` : `${hours}h${minutes}m`
+}
+
 /**
  * 绘制单个活动的柱状图
  * @param lineChartDom
@@ -135,24 +141,14 @@ export function drawBarChartOfSingleActivity(
   var option = {
     legend: {},
     tooltip: {
-      valueFormatter: (value: number) => {
-        let time = moment.duration(value, 'seconds')
-        let hours = time.hours()
-        let minutes = time.minutes()
-        return `${hours}h${minutes}m`
-      },
+      valueFormatter: transformSecondsToHM,
     },
     color:
       '#' +
       ('00000' + ((Math.random() * 0x1000000) << 0).toString(16)).substr(-6),
     yAxis: {
       axisLabel: {
-        formatter: function (value: number) {
-          let time = moment.duration(value, 'seconds')
-          let hours = time.hours()
-          let minutes = time.minutes()
-          return `${hours}h${minutes}m`
-        },
+        formatter: transformSecondsToHM,
       },
       type: 'value',
     },
@@ -181,12 +177,7 @@ export function initBarChart(barChartDom: HTMLElement, barData: any) {
   var myChart = echarts.init(barChartDom!)
   var option = {
     tooltip: {
-      valueFormatter: (value: number) => {
-        let time = moment.duration(value, 'seconds')
-        let hours = time.hours()
-        let minutes = time.minutes()
-        return `${hours}h${minutes}m`
-      },
+      valueFormatter: transformSecondsToHM,
     },
     dataset: [
       {
@@ -203,12 +194,7 @@ export function initBarChart(barChartDom: HTMLElement, barData: any) {
 
     xAxis: {
       axisLabel: {
-        formatter: function (value: number) {
-          let time = moment.duration(value, 'seconds')
-          let hours = time.hours()
-          let minutes = time.minutes()
-          return `${hours}h${minutes}m`
-        },
+        formatter: transformSecondsToHM,
       },
     },
     yAxis: {
@@ -234,12 +220,7 @@ export function initLineChart(lineChartDom: HTMLElement, lineData: Array<{}>) {
   var option = {
     legend: {},
     tooltip: {
-      valueFormatter: (value: number) => {
-        let time = moment.duration(value, 'seconds')
-        let hours = time.hours()
-        let minutes = time.minutes()
-        return `${hours}h${minutes}m`
-      },
+      valueFormatter: transformSecondsToHM,
     },
     dataset: [
       {
@@ -283,12 +264,7 @@ export function initPieChart(
       left: 0,
     },
     tooltip: {
-      valueFormatter: (value: number) => {
-        let time = moment.duration(value, 'seconds')
-        let hours = time.hours()
-        let minutes = time.minutes()
-        return `${hours}h${minutes}m`
-      },
+      valueFormatter: transformSecondsToHM,
     },
     dataset: [
       {
